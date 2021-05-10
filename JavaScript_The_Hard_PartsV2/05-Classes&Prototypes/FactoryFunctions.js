@@ -12,5 +12,5 @@ const user1 = userCreator('Renzo', 5);
 const user2 = userCreator('Pinta', 3);
 
 user1.increment();
-
+console.log('Hola Mundo')
 console.log(user1, user2);
