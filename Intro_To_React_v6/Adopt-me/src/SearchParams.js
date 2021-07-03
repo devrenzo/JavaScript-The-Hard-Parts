@@ -3,6 +3,8 @@ import { useState, useEffect, useContext } from "react";
 import useBreedList from "./useBreedList";
 import Results from "./Results";
 import ThemeContext from "./ThemeContext";
+import Navbar from "./Navbar";
+import Pagination from "./Pagination";
 
 const ANIMALS = ["bird", "cat", "dog", "rabbit", "reptile"];
 
@@ -10,23 +12,36 @@ const SearchParams = () => {
   const [location, setLocation] = useState("Seattle");
   const [animal, setAnimal] = useState("");
   const [breed, setBreed] = useState("");
+  // RENDER STATES
   const [pets, setPets] = useState([]);
+  const [cache, setCache] = useState([]);
   const [breedList] = useBreedList(animal);
+  // THEME
   const [theme, setTheme] = useContext(ThemeContext);
   const themeList = ["darkblue", "pink", "black"];
+  // PAGINATION
+  const [page, setPage] = useState({ num: 0, hasNext: true });
 
   useEffect(() => {
     requestPets();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const requestPets = async () => {
+    console.log(page.num);
+
     const res = await fetch(
-      `http://pets-v2.dev-apis.com/pets?animal=${animal}&location=${location}&breed=${breed}`
+      `http://pets-v2.dev-apis.com/pets?animal=${animal}&location=${location}&breed=${breed}&page=${page.num}`
     );
 
     const body = await res.json();
+
+    console.log("REQUEST");
+
     console.log(body);
+
     setPets(body.pets);
+    setPage({ ...page, hasNext: body.hasNext });
+    setCache(body.pets);
   };
 
   const handleInput = ({ target }) => {
@@ -36,6 +51,40 @@ const SearchParams = () => {
   const handleForm = (e) => {
     e.preventDefault();
     requestPets();
+  };
+
+  const handleSearch = (params) => {
+    const hasAnimals = [...pets].filter(({ animal }) => animal === params.toLowerCase());
+
+    if (!hasAnimals.length) {
+      setCache(pets);
+      return;
+    }
+
+    setCache(hasAnimals);
+
+    console.log({ cache });
+  };
+
+  const handlePagination = async ({ target }) => {
+    const { id } = target;
+
+    const { num } = page;
+
+    if (id === "next" && page.hasNext) {
+      setPage({ ...page, num: num + 1 });
+      console.log(page.num);
+      await requestPets();
+      return;
+    }
+
+    if (id === "prev") {
+      setPage({ ...page, num: num - 1 });
+      await requestPets();
+      return;
+    }
+
+    console.log({ page });
   };
 
   return (
@@ -110,9 +159,17 @@ const SearchParams = () => {
         <button style={{ backgroundColor: theme }}>Submit</button>
       </form>
 
+      {/* NAVBAR */}
+
+      <Navbar handleSearch={handleSearch} />
+
       {/* RESULTS */}
 
-      <Results pets={pets} />
+      <Results pets={cache.length > 0 ? cache : pets} />
+
+      {/* PAGINATION  */}
+
+      <Pagination onClick={handlePagination} currentPage={page.num} />
     </div>
   );
 };

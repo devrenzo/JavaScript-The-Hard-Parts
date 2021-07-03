@@ -244,6 +244,12 @@ header {
   margin-right: 15px;
 }
 
+.pagination {
+  display: flex;
+  align-items: center;
+  background-color: #aaa;
+}
+
 @media only screen and (max-width: 1129px) {
   header {
     display: flex;
