@@ -9,7 +9,7 @@ import Pagination from "./Pagination";
 const ANIMALS = ["bird", "cat", "dog", "rabbit", "reptile"];
 
 const SearchParams = () => {
-  const [location, setLocation] = useState("Seattle");
+  const [location, setLocation] = useState("");
   const [animal, setAnimal] = useState("");
   const [breed, setBreed] = useState("");
   // RENDER STATES
@@ -69,17 +69,15 @@ const SearchParams = () => {
   const handlePagination = async ({ target }) => {
     const { id } = target;
 
-    const { num } = page;
-
     if (id === "next" && page.hasNext) {
-      setPage({ ...page, num: num + 1 });
+      setPage({ ...page, num: page.num++ });
       console.log(page.num);
       await requestPets();
       return;
     }
 
     if (id === "prev") {
-      setPage({ ...page, num: num - 1 });
+      setPage({ ...page, num: page.num-- });
       await requestPets();
       return;
     }
